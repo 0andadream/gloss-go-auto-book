@@ -29,7 +29,7 @@ export const Route = createFileRoute("/book")({
 const STEPS = ["Vehicle", "Package", "Address", "Time", "Summary", "Details", "Done"];
 const ICONS: Record<Vehicle, typeof Car> = { Sedan: Car, SUV: CarFront, Truck: Truck, Van: Bus, Coupe: Gauge };
 
-type Appt = { confirmation_code: string; start_time: string; price: number; vehicle_type: string; package: string; address: string; customer_name: string; travel_buffer_minutes: number; duration_minutes: number };
+type Appt = { confirmation_code: string; start_time: string; price: number; deposit_amount: number; vehicle_type: string; package: string; address: string; customer_name: string; travel_buffer_minutes: number; duration_minutes: number };
 
 function BookPage() {
   const { pkg: prePkg } = Route.useSearch();
