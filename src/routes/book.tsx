@@ -35,7 +35,7 @@ const ICONS: Record<Vehicle, typeof Car> = { Sedan: Car, SUV: CarFront, Truck: T
 type Appt = { confirmation_code: string; start_time: string; price: number; deposit_amount: number; vehicle_type: string; package: string; address: string; customer_name: string; travel_buffer_minutes: number; duration_minutes: number };
 
 function BookPage() {
-  const { pkg: prePkg, status: payStatus, tx_ref, transaction_id } = Route.useSearch();
+  const { pkg: prePkg, tx_ref, transaction_id } = Route.useSearch();
   const [step, setStep] = useState(0);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [pkg, setPkg] = useState<PackageName | null>(prePkg ?? null);
@@ -111,9 +111,10 @@ function BookPage() {
   async function pay() {
     if (!vehicle || !pkg || !slot) return;
     setPaying(true);
-    await new Promise((r) => setTimeout(r, 1000)); // simulated card processing
     try {
-      const r = await bookFn({ data: { vehicle, pkg, address, startIso: slot, ...contact, leadId: leadId ?? undefined } });
+      const r = await initFn({
+        data: { vehicle, pkg, address, startIso: slot, ...contact, leadId: leadId ?? undefined, redirectUrl: `${window.location.origin}/book` },
+      });
       if (!r.ok) {
         toast.error("That time was just booked — please choose another.");
         setSlot(null); setDayKey(null);
@@ -121,11 +122,9 @@ function BookPage() {
         go(3);
         return;
       }
-      setBooked(r.appointment as Appt);
-      go(6);
+      window.location.href = r.link; // off to Flutterwave's secure checkout
     } catch {
-      toast.error("Something went wrong. Your card was not charged — please try again.");
-    } finally {
+      toast.error("Could not start the payment — please try again.");
       setPaying(false);
     }
   }
