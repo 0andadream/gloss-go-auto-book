@@ -20,7 +20,7 @@ export const Route = createFileRoute("/book")({
       { title: "Book a Mobile Detail — GlossGo Anambra" },
       { name: "description", content: "Pick your vehicle, package and a real open time. We come to you anywhere in Awka, Onitsha, Nnewi and environs." },
       { property: "og:title", content: "Book a Mobile Detail — GlossGo Anambra" },
-      { property: "og:description", content: "Live availability, ₦3,000 deposit, confirmed in 60 seconds." },
+      { property: "og:description", content: "Live availability, 30% deposit, confirmed in 60 seconds." },
     ],
   }),
   component: BookPage,
@@ -200,8 +200,8 @@ function BookPage() {
                 <Line label={`Travel buffer (${buf.minutes} min, ${buf.area})`} value="Included" />
                 <div className="my-4 border-t border-border" />
                 <Line label="Total" value={money(q.price)} big />
-                <Line label="Due today (deposit)" value={money(DEPOSIT)} />
-                <Line label="Due after service" value={money(q.price - DEPOSIT)} />
+                <Line label="Due today (30% deposit)" value={money(depositOf(q.price))} />
+                <Line label="Due after service" value={money(q.price - depositOf(q.price))} />
                 <div className="mt-5 rounded-xl bg-secondary p-4 text-sm text-muted-foreground">
                   {fmtDay(slot)} at {fmtTime(slot)} · {address}
                 </div>
@@ -226,9 +226,9 @@ function BookPage() {
                   <div className="mb-4 rounded-xl border border-border bg-secondary p-4 font-mono text-sm tracking-widest text-muted-foreground">
                     •••• •••• •••• 4242 <span className="float-right">12/29</span>
                   </div>
-                  <p className="mb-6 text-sm text-muted-foreground">Demo payment (card or bank transfer) — nothing is actually charged. Your {money(DEPOSIT)} deposit is applied to your {money(q.price)} total.</p>
+                  <p className="mb-6 text-sm text-muted-foreground">Demo payment (card or bank transfer) — nothing is actually charged. Your {money(depositOf(q.price))} deposit (30%) is applied to your {money(q.price)} total.</p>
                   <PrimaryButton onClick={pay} disabled={paying}>
-                    {paying ? <><Loader2 className="h-5 w-5 animate-spin" /> Processing…</> : `Pay ${money(DEPOSIT)} Deposit`}
+                    {paying ? <><Loader2 className="h-5 w-5 animate-spin" /> Processing…</> : `Pay ${money(depositOf(q.price))} Deposit`}
                   </PrimaryButton>
                 </div>
               )}
@@ -252,7 +252,7 @@ function BookPage() {
                 <Line label="Duration" value={`${booked.duration_minutes} min`} />
                 <Line label="Where" value={booked.address} />
                 <Line label="Total" value={money(Number(booked.price))} />
-                <Line label="Deposit paid" value={money(DEPOSIT)} />
+                <Line label="Deposit paid (30%)" value={money(Number(booked.deposit_amount))} />
               </div>
               <div className="mt-8 flex justify-center gap-6 text-sm">
                 <Link to="/my-booking" search={{ code: booked.confirmation_code }} className="underline opacity-70 hover:opacity-100">Manage booking</Link>
