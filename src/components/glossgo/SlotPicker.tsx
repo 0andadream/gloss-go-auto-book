@@ -16,7 +16,7 @@ export function SlotPicker({
       </p>
       <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-2">
         {days.map((d) => {
-          const [wd, ...rest] = fmtDayKey(d.dayKey).split(" ");
+          const [wd = "", ...rest] = fmtDayKey(d.dayKey).split(" ");
           const none = d.slots.length === 0;
           const sel = d.dayKey === dayKey;
           return (

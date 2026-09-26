@@ -52,17 +52,17 @@ export function travelBuffer(address: string) {
 
 // ---------- Time zone helpers (all business hours are Austin local time) ----------
 function tzOffsetMin(date: Date) {
-  const p = Object.fromEntries(
+  const p: Record<string, number> = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
       timeZone: TZ, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
       hour: "2-digit", minute: "2-digit", second: "2-digit",
-    }).formatToParts(date).map((x) => [x.type, x.value]),
+    }).formatToParts(date).map((x) => [x.type, Number(x.value)]),
   );
-  const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+  const asUtc = Date.UTC(p['year']!, p['month']! - 1, p['day']!, p['hour']! % 24, p['minute']!, p['second']!);
   return Math.round((asUtc - date.getTime()) / 60000);
 }
 export function localToUtc(dayKey: string, minutes: number) {
-  const [y, m, d] = dayKey.split("-").map(Number);
+  const [y = 0, m = 1, d = 1] = dayKey.split("-").map(Number);
   const guess = Date.UTC(y, m - 1, d) + minutes * 60000;
   const off = tzOffsetMin(new Date(guess));
   return new Date(guess - off * 60000);
