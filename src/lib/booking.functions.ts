@@ -190,3 +190,23 @@ export const sendFollowUp = createServerFn({ method: "POST" })
     await log([`Follow-up scheduled for abandoned booking · ${lead.name} (${lead.phone})`]);
     return lead;
   });
+
+export const listReviews = createServerFn({ method: "GET" }).handler(async () => {
+  const sb = await db();
+  const { data, error } = await sb.from("reviews").select("id, name, rating, comment, created_at").order("created_at", { ascending: false }).limit(50);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+});
+
+export const addReview = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({
+    name: z.string().trim().min(1).max(60),
+    rating: z.number().int().min(1).max(5),
+    comment: z.string().trim().min(3).max(600),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    const sb = await db();
+    const { error } = await sb.from("reviews").insert(data);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

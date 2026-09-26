@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import hero from "@/assets/hero.jpg";
 import { PACKAGES, PACKAGE_NAMES, money } from "@/lib/glossgo";
+import { Reviews } from "@/components/glossgo/Reviews";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,7 +26,7 @@ function useTypewriter(text: string, speed = 36, startDelay = 500) {
   return { displayed: text.slice(0, n), done: n >= text.length };
 }
 
-const NAV = [["Services", "services"], ["How It Works", "how"]] as const;
+const NAV = [["Services", "services"], ["How It Works", "how"], ["Reviews", "reviews"]] as const;
 
 function Landing() {
   const [open, setOpen] = useState(false);
@@ -110,6 +111,7 @@ function Landing() {
           </div>
         </section>
 
+        <Reviews />
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-6 px-5 py-10 text-sm text-muted-foreground sm:px-8">
