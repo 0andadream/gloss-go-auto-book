@@ -38,7 +38,7 @@ function Dashboard() {
       <main className="mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h1 className="font-heading text-3xl font-extrabold tracking-tight">Good day, Marcus</h1>
+            <h1 className="font-heading text-3xl font-extrabold tracking-tight">Good day, boss</h1>
             <p className="text-sm text-muted-foreground">Live from your booking database · refreshes every 5s</p>
           </div>
           {dataUpdatedAt > 0 && <span className="text-xs text-muted-foreground">Updated {new Date(dataUpdatedAt).toLocaleTimeString()}</span>}
@@ -91,7 +91,7 @@ function Dashboard() {
                     {data.activity.map((e) => (
                       <li key={e.id} className="border-l-2 border-primary/50 pl-3">
                         <div className="text-sm">{e.message}</div>
-                        <div className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>
+                        <div className="text-xs text-muted-foreground">{new Date(e.created_at).toLocaleString("en-US", { timeZone: "Africa/Lagos", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>
                       </li>
                     ))}
                   </ul>

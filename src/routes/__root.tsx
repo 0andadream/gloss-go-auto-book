@@ -78,8 +78,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GlossGo Mobile Detailing — Austin, TX" },
-      { name: "description", content: "Premium mobile car detailing in Austin. Book in 60 seconds — we come to you." },
+      { title: "GlossGo Mobile Detailing — Anambra, Nigeria" },
+      { name: "description", content: "Premium mobile car detailing across Anambra. Book in 60 seconds — we come to you." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

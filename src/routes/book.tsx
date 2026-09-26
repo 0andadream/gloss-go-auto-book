@@ -17,10 +17,10 @@ export const Route = createFileRoute("/book")({
   validateSearch: (s) => z.object({ pkg: z.enum(PACKAGE_NAMES as [PackageName, ...PackageName[]]).optional() }).parse(s),
   head: () => ({
     meta: [
-      { title: "Book a Mobile Detail — GlossGo Austin" },
-      { name: "description", content: "Pick your vehicle, package and a real open time. We come to you anywhere in Austin." },
-      { property: "og:title", content: "Book a Mobile Detail — GlossGo Austin" },
-      { property: "og:description", content: "Live availability, $25 deposit, confirmed in 60 seconds." },
+      { title: "Book a Mobile Detail — GlossGo Anambra" },
+      { name: "description", content: "Pick your vehicle, package and a real open time. We come to you anywhere in Awka, Onitsha, Nnewi and environs." },
+      { property: "og:title", content: "Book a Mobile Detail — GlossGo Anambra" },
+      { property: "og:description", content: "Live availability, ₦3,000 deposit, confirmed in 60 seconds." },
     ],
   }),
   component: BookPage,
@@ -149,7 +149,7 @@ function BookPage() {
                         <div className="font-heading text-xl font-bold">{p} — {vehicle}: {qq.minutes} min, {money(qq.price)}</div>
                         <div className="mt-1 text-sm text-muted-foreground">{PACKAGES[p].blurb}</div>
                         {qq.surchargePrice > 0 && (
-                          <div className="mt-2 text-xs text-primary">Base {qq.baseMinutes} min / {money(qq.basePrice)} + {vehicle} surcharge 20 min / $20</div>
+                          <div className="mt-2 text-xs text-primary">Base {qq.baseMinutes} min / {money(qq.basePrice)} + {vehicle} surcharge 20 min / ₦5,000</div>
                         )}
                       </div>
                       <div className="font-heading text-3xl font-extrabold">{money(qq.price)}</div>
@@ -161,11 +161,11 @@ function BookPage() {
           )}
 
           {step === 2 && (
-            <Section title="Where's the car?" sub="We come to your home or office anywhere in Austin.">
+            <Section title="Where's the car?" sub="We come to your home or office anywhere in Awka, Onitsha, Nnewi and environs.">
               <form onSubmit={(e) => { e.preventDefault(); if (address.trim().length >= 3) { setDayKey(null); setSlot(null); go(3); } }}>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <input autoFocus value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. 1500 S Congress Ave, South Austin"
+                  <input autoFocus value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. Onitsha, Fegge or Awka, Amawbia"
                     className="w-full rounded-2xl border border-input bg-card py-5 pl-12 pr-4 text-lg outline-none focus:border-primary" />
                 </div>
                 {address.trim().length >= 3 && (
@@ -179,7 +179,7 @@ function BookPage() {
           )}
 
           {step === 3 && (
-            <Section title="Pick a time" sub={q ? `${pkg} · ${q.minutes} min on site. Times shown are arrival times (Austin time).` : ""}>
+            <Section title="Pick a time" sub={q ? `${pkg} · ${q.minutes} min on site. Times shown are arrival times (Nigeria time).` : ""}>
               {avail.isLoading || !avail.data ? (
                 <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Checking live availability…</div>
               ) : (
@@ -226,7 +226,7 @@ function BookPage() {
                   <div className="mb-4 rounded-xl border border-border bg-secondary p-4 font-mono text-sm tracking-widest text-muted-foreground">
                     •••• •••• •••• 4242 <span className="float-right">12/29</span>
                   </div>
-                  <p className="mb-6 text-sm text-muted-foreground">Demo payment — no real card is charged. Your {money(DEPOSIT)} deposit is applied to your {money(q.price)} total.</p>
+                  <p className="mb-6 text-sm text-muted-foreground">Demo payment (card or bank transfer) — nothing is actually charged. Your {money(DEPOSIT)} deposit is applied to your {money(q.price)} total.</p>
                   <PrimaryButton onClick={pay} disabled={paying}>
                     {paying ? <><Loader2 className="h-5 w-5 animate-spin" /> Processing…</> : `Pay ${money(DEPOSIT)} Deposit`}
                   </PrimaryButton>

@@ -7,9 +7,9 @@ import { PACKAGES, PACKAGE_NAMES, money } from "@/lib/glossgo";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "GlossGo Mobile Detailing — Book in 60 Seconds, Austin TX" },
-      { name: "description", content: "Austin's premium mobile car detailing. Express, Full and Premium details at your door. Book online in 60 seconds." },
-      { property: "og:title", content: "GlossGo Mobile Detailing — Austin, TX" },
+      { title: "GlossGo Mobile Detailing — Book in 60 Seconds, Anambra" },
+      { name: "description", content: "Anambra's premium mobile car detailing. Express, Full and Premium details at your door. Book online in 60 seconds." },
+      { property: "og:title", content: "GlossGo Mobile Detailing — Anambra, Nigeria" },
       { property: "og:description", content: "Book your detail in 60 seconds. We come to you." },
     ],
   }),
@@ -69,7 +69,7 @@ function Landing() {
       {/* Hero */}
       <header className="relative z-[1] flex h-screen flex-col justify-end pb-12 md:justify-center md:pb-0">
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
-          <p className="mb-4 blur-[0.3px]" style={{ fontSize: "clamp(16px, 3vw, 20px)", color: "rgba(255,255,255,0.7)" }}>Austin's mobile detailing crew</p>
+          <p className="mb-4 blur-[0.3px]" style={{ fontSize: "clamp(16px, 3vw, 20px)", color: "rgba(255,255,255,0.7)" }}>Anambra's mobile detailing crew</p>
           <h1 className="font-heading max-w-3xl font-extrabold" style={{ fontSize: "clamp(32px, 6vw, 56px)", lineHeight: 1.1 }}>
             {displayed}
             {!done && <span className="animate-blink ml-1 inline-block h-[1em] w-[3px] translate-y-[0.12em] bg-primary" />}
@@ -89,7 +89,7 @@ function Landing() {
       <div className="relative z-[1] bg-background">
         <section id="services" className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
           <h2 className="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">Three ways to shine.</h2>
-          <p className="mt-3 text-muted-foreground">SUVs, trucks and vans add 20 min and $20 to Full and Premium details.</p>
+          <p className="mt-3 text-muted-foreground">SUVs, trucks and vans add 20 min and ₦5,000 to Full and Premium details.</p>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {PACKAGE_NAMES.map((p) => (
               <div key={p} className="gloss flex flex-col rounded-3xl border border-border bg-card p-7">
@@ -114,7 +114,7 @@ function Landing() {
         <section id="reviews" className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex text-primary">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-5 w-5 fill-current" />)}</div>
-            <span className="font-heading text-xl font-bold">4.9 average · 500+ Austin cars detailed</span>
+            <span className="font-heading text-xl font-bold">4.9 average · 500+ cars detailed across Anambra</span>
           </div>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
             {[["Booked on my lunch break, car was spotless by 3. Unreal.", "Tasha R., Mueller"], ["Marcus got the dog hair out of my 4Runner. I didn't think that was possible.", "Kevin L., South Austin"], ["Rescheduled from my phone in ten seconds. No back-and-forth.", "Ana P., Downtown"]].map(([q, a]) => (

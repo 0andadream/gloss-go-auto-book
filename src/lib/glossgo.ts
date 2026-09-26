@@ -1,21 +1,23 @@
 // Shared, pure business rules for GlossGo (safe on client and server).
-export const TZ = "America/Chicago";
+export const TZ = "Africa/Lagos";
 export const OPEN_MIN = 8 * 60; // 8:00 AM
 export const CLOSE_MIN = 18 * 60; // 6:00 PM
 export const SLOT_STEP = 15;
-export const DEPOSIT = 25;
+export const DEPOSIT = 3000;
 
 export const VEHICLES = ["Sedan", "SUV", "Truck", "Van", "Coupe"] as const;
 export type Vehicle = (typeof VEHICLES)[number];
 export const LARGE_VEHICLES: Vehicle[] = ["SUV", "Truck", "Van"];
 
 export const PACKAGES = {
-  "Express Wash": { minutes: 30, price: 59, blurb: "Hand wash, wheels, tire shine, windows." },
-  "Full Detail": { minutes: 90, price: 189, blurb: "Deep interior + exterior, clay & sealant." },
-  "Premium Detail": { minutes: 150, price: 299, blurb: "Paint enhancement, leather care, engine bay." },
+  "Express Wash": { minutes: 30, price: 8000, blurb: "Hand wash, wheels, tire shine, windows." },
+  "Full Detail": { minutes: 90, price: 25000, blurb: "Deep interior + exterior, clay & sealant." },
+  "Premium Detail": { minutes: 150, price: 40000, blurb: "Paint enhancement, leather care, engine bay." },
 } as const;
 export type PackageName = keyof typeof PACKAGES;
 export const PACKAGE_NAMES = Object.keys(PACKAGES) as PackageName[];
+
+export const SURCHARGE_PRICE = 5000;
 
 export function quote(vehicle: Vehicle, pkg: PackageName) {
   const base = PACKAGES[pkg];
@@ -23,34 +25,30 @@ export function quote(vehicle: Vehicle, pkg: PackageName) {
   return {
     basePrice: base.price,
     baseMinutes: base.minutes,
-    surchargePrice: surcharge ? 20 : 0,
+    surchargePrice: surcharge ? SURCHARGE_PRICE : 0,
     surchargeMinutes: surcharge ? 20 : 0,
-    price: base.price + (surcharge ? 20 : 0),
+    price: base.price + (surcharge ? SURCHARGE_PRICE : 0),
     minutes: base.minutes + (surcharge ? 20 : 0),
   };
 }
 
 export const BUFFER_TABLE: { keywords: string[]; area: string; minutes: number }[] = [
-  { keywords: ["downtown", "78701"], area: "Downtown", minutes: 15 },
-  { keywords: ["east austin", "east 6th", "e 6th", "78702"], area: "East Austin", minutes: 20 },
-  { keywords: ["south austin", "south congress", "s congress", "soco", "78745", "78704"], area: "South Austin", minutes: 25 },
-  { keywords: ["domain", "north austin", "78758"], area: "Domain / North Austin", minutes: 30 },
-  { keywords: ["hyde park", "78751"], area: "Hyde Park", minutes: 20 },
-  { keywords: ["mueller", "78723"], area: "Mueller", minutes: 20 },
-  { keywords: ["zilker", "barton", "78746"], area: "Zilker / Barton Hills", minutes: 20 },
-  { keywords: ["round rock", "78664", "78681"], area: "Round Rock", minutes: 35 },
+  { keywords: ["awka", "amawbia", "okpuno", "nibo", "nise", "mbaukwu", "unizik", "ifite"], area: "Awka", minutes: 15 },
+  { keywords: ["onitsha", "fegge", "gra onitsha", "odoakpu", "woliwo", "3-3", "main market"], area: "Onitsha", minutes: 35 },
+  { keywords: ["nnewi", "otolo", "uruagu", "umudim", "nnewichi"], area: "Nnewi", minutes: 40 },
+  { keywords: ["ekwulobia", "aguata"], area: "Ekwulobia", minutes: 30 },
 ];
-export const DEFAULT_BUFFER = 20;
+export const DEFAULT_BUFFER = 25;
 
 export function travelBuffer(address: string) {
   const a = address.toLowerCase();
   for (const row of BUFFER_TABLE) {
     if (row.keywords.some((k) => a.includes(k))) return { area: row.area, minutes: row.minutes, matched: true };
   }
-  return { area: "Greater Austin", minutes: DEFAULT_BUFFER, matched: false };
+  return { area: "Anambra (other area)", minutes: DEFAULT_BUFFER, matched: false };
 }
 
-// ---------- Time zone helpers (all business hours are Austin local time) ----------
+// ---------- Time zone helpers (all business hours are Lagos local time) ----------
 function tzOffsetMin(date: Date) {
   const p: Record<string, number> = Object.fromEntries(
     new Intl.DateTimeFormat("en-US", {
@@ -81,7 +79,7 @@ export const fmtTime = (iso: string | Date) =>
 export const fmtDay = (iso: string | Date) =>
   new Date(iso).toLocaleDateString("en-US", { timeZone: TZ, weekday: "short", month: "short", day: "numeric" });
 export const fmtDayKey = (k: string) => fmtDay(localToUtc(k, 12 * 60));
-export const money = (n: number) => `$${Number(n).toFixed(Number(n) % 1 ? 2 : 0)}`;
+export const money = (n: number) => `₦${Math.round(Number(n)).toLocaleString("en-US")}`;
 
 // ---------- The scheduling engine ----------
 export type Busy = { block_start: string; end_time: string };
