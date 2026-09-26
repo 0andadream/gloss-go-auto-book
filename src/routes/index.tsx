@@ -117,7 +117,7 @@ function Landing() {
             <span className="font-heading text-xl font-bold">4.9 average · 500+ cars detailed across Anambra</span>
           </div>
           <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {[["Booked on my lunch break, car was spotless by 3. Unreal.", "Tasha R., Mueller"], ["Marcus got the dog hair out of my 4Runner. I didn't think that was possible.", "Kevin L., South Austin"], ["Rescheduled from my phone in ten seconds. No back-and-forth.", "Ana P., Downtown"]].map(([q, a]) => (
+            {[["Booked on my lunch break, car was spotless by 3. Unreal.", "Chioma O., Awka"], ["Came to my shop in Onitsha and my Highlander looked brand new. No stress at all.", "Emeka N., Onitsha"], ["Rescheduled from my phone in ten seconds. No back-and-forth.", "Ifeoma A., Nnewi"]].map(([q, a]) => (
               <blockquote key={a} className="rounded-3xl border border-border bg-card p-7"><p className="text-lg">"{q}"</p><footer className="mt-4 text-sm text-muted-foreground">{a}</footer></blockquote>
             ))}
           </div>
@@ -125,8 +125,8 @@ function Landing() {
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-6 px-5 py-10 text-sm text-muted-foreground sm:px-8">
-            <div><div className="font-heading text-lg font-extrabold text-foreground">Gloss<span className="text-primary">Go</span></div>Owned by Marcus Reed · (512) 555-0100 · hello@glossgo.co</div>
-            <div>Serving Austin, Round Rock & surrounding areas · 8 AM – 6 PM daily</div>
+            <div><div className="font-heading text-lg font-extrabold text-foreground">Gloss<span className="text-primary">Go</span></div>Owner-operated · 0803 555 0100 · hello@glossgo.ng</div>
+            <div>Serving Awka, Onitsha, Nnewi and environs · 8 AM – 6 PM daily</div>
             <div className="flex gap-4"><a href="#" className="hover:text-foreground">Instagram</a><a href="#" className="hover:text-foreground">TikTok</a><Link to="/my-booking" className="hover:text-foreground">My Booking</Link><Link to="/dashboard" className="hover:text-foreground">Owner</Link></div>
           </div>
         </footer>
