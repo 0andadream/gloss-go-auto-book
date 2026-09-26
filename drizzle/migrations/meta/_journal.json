@@ -8,6 +8,13 @@
       "when": 1790424236844,
       "tag": "0000_glossgo_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790435383129,
+      "tag": "0001_create_reviews",
+      "breakpoints": true
     }
   ]
 }
