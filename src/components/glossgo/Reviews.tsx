@@ -33,8 +33,8 @@ export function Reviews() {
 
   const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
-    if (!rating) return toast.error("Tap the stars to pick a rating");
-    if (!name.trim() || comment.trim().length < 3) return toast.error("Add your name and a short review");
+    if (!rating) { toast.error("Tap the stars to pick a rating"); return; }
+    if (!name.trim() || comment.trim().length < 3) { toast.error("Add your name and a short review"); return; }
     setBusy(true);
     try {
       await addReview({ data: { name, rating, comment } });
