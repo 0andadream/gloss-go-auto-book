@@ -7,14 +7,17 @@ import { z } from "zod";
 import { Car, CarFront, Truck, Bus, Gauge, ArrowLeft, Check, Loader2, MapPin } from "lucide-react";
 import { MiniHeader } from "@/components/glossgo/MiniHeader";
 import { SlotPicker } from "@/components/glossgo/SlotPicker";
-import { createBooking, createLead, getAvailability } from "@/lib/booking.functions";
+import { createLead, getAvailability, initDeposit, verifyDeposit } from "@/lib/booking.functions";
 import {
   depositOf, PACKAGES, PACKAGE_NAMES, VEHICLES, fmtDay, fmtTime, money, quote, travelBuffer,
   type PackageName, type Vehicle,
 } from "@/lib/glossgo";
 
 export const Route = createFileRoute("/book")({
-  validateSearch: (s) => z.object({ pkg: z.enum(PACKAGE_NAMES as [PackageName, ...PackageName[]]).optional() }).parse(s),
+  validateSearch: (s) => z.object({
+    pkg: z.enum(PACKAGE_NAMES as [PackageName, ...PackageName[]]).optional(),
+    status: z.string().optional(), tx_ref: z.string().optional(), transaction_id: z.string().optional(),
+  }).parse(s),
   head: () => ({
     meta: [
       { title: "Book a Mobile Detail — GlossGo Anambra" },
