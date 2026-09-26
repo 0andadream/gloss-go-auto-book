@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  PACKAGE_NAMES, VEHICLES, DEPOSIT, money, computeSlots, dayKeyOf, fmtDay, fmtTime, nextDayKeys, quote, travelBuffer,
+  PACKAGE_NAMES, VEHICLES, depositOf, money, computeSlots, dayKeyOf, fmtDay, fmtTime, nextDayKeys, quote, travelBuffer,
   type PackageName, type Vehicle,
 } from "./glossgo";
 
@@ -96,7 +96,7 @@ export const createBooking = createServerFn({ method: "POST" })
         vehicle_type: data.vehicle, package: data.pkg, duration_minutes: q.minutes, address: data.address,
         travel_buffer_minutes: buffer.minutes, block_start: blockStart.toISOString(),
         start_time: start.toISOString(), end_time: end.toISOString(), price: q.price,
-        deposit_amount: DEPOSIT, deposit_status: "paid", status: "confirmed", source: "booked",
+        deposit_amount: depositOf(q.price), deposit_status: "paid", status: "confirmed", source: "booked",
       }).select("*").single();
       if (error) {
         if (error.code === "23P01") return { ok: false as const, reason: "taken" as const }; // DB-level overlap guard
@@ -106,7 +106,7 @@ export const createBooking = createServerFn({ method: "POST" })
       if (data.leadId) await sb.from("leads").update({ status: "converted" }).eq("id", data.leadId);
       await log([
         `${buffer.minutes}-minute travel buffer added (${buffer.area}) · ${code}`,
-        `${money(DEPOSIT)} deposit recorded · ${code}`,
+        `${money(depositOf(q.price))} deposit recorded · ${code}`,
         `Booking confirmed automatically · ${data.name} · ${data.vehicle} ${data.pkg} · ${fmtDay(start)} ${fmtTime(start)}`,
         `Confirmation sent to ${data.email} · ${code}`,
       ]);
