@@ -75,44 +75,104 @@ export const createLead = createServerFn({ method: "POST" })
     return { leadId: row.id };
   });
 
-export const createBooking = createServerFn({ method: "POST" })
-  .inputValidator((d) => svc.extend({
-    startIso: z.string().datetime(),
-    name: z.string().trim().min(1).max(100), phone: z.string().trim().min(7).max(30), email: z.string().trim().email().max(200),
-    leadId: z.string().uuid().optional(),
-  }).parse(d))
+const bookingInput = svc.extend({
+  startIso: z.string().datetime(),
+  name: z.string().trim().min(1).max(100), phone: z.string().trim().min(7).max(30), email: z.string().trim().email().max(200),
+  leadId: z.string().uuid().optional(),
+});
+type BookingInput = z.infer<typeof bookingInput>;
+
+/** Insert the appointment after payment is confirmed. Re-checks the slot first (race guard). */
+async function insertBooking(data: BookingInput, paymentNote: string) {
+  const check = await isSlotStillOpen(data.vehicle, data.pkg, data.address, data.startIso);
+  if (!check.ok) return { ok: false as const, reason: "taken" as const };
+  const { quote: q, buffer } = check.a;
+  const start = new Date(data.startIso);
+  const end = new Date(start.getTime() + q.minutes * 60000);
+  const blockStart = new Date(start.getTime() - buffer.minutes * 60000);
+  const sb = await db();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = makeCode();
+    const { data: row, error } = await sb.from("appointments").insert({
+      confirmation_code: code, customer_name: data.name, phone: data.phone, email: data.email,
+      vehicle_type: data.vehicle, package: data.pkg, duration_minutes: q.minutes, address: data.address,
+      travel_buffer_minutes: buffer.minutes, block_start: blockStart.toISOString(),
+      start_time: start.toISOString(), end_time: end.toISOString(), price: q.price,
+      deposit_amount: depositOf(q.price), deposit_status: "paid", status: "confirmed", source: "booked",
+    }).select("*").single();
+    if (error) {
+      if (error.code === "23P01") return { ok: false as const, reason: "taken" as const }; // DB-level overlap guard
+      if (error.code === "23505") continue; // code collision, retry
+      throw new Error(error.message);
+    }
+    if (data.leadId) await sb.from("leads").update({ status: "converted" }).eq("id", data.leadId);
+    await log([
+      `${buffer.minutes}-minute travel buffer added (${buffer.area}) · ${code}`,
+      `${money(depositOf(q.price))} deposit received via Flutterwave (${paymentNote}) · ${code}`,
+      `Booking confirmed automatically · ${data.name} · ${data.vehicle} ${data.pkg} · ${fmtDay(start)} ${fmtTime(start)}`,
+      `Confirmation sent to ${data.email} · ${code}`,
+    ]);
+    return { ok: true as const, appointment: row };
+  }
+  throw new Error("Could not generate a confirmation code");
+}
+
+const FLW_API = "https://api.flutterwave.com/v3";
+
+/** Step 1 of payment: re-check the slot, park the booking, and create a Flutterwave checkout link. */
+export const initDeposit = createServerFn({ method: "POST" })
+  .inputValidator((d) => bookingInput.extend({ redirectUrl: z.string().url().max(500) }).parse(d))
   .handler(async ({ data }) => {
     const check = await isSlotStillOpen(data.vehicle, data.pkg, data.address, data.startIso);
     if (!check.ok) return { ok: false as const, reason: "taken" as const };
-    const { quote: q, buffer } = check.a;
-    const start = new Date(data.startIso);
-    const end = new Date(start.getTime() + q.minutes * 60000);
-    const blockStart = new Date(start.getTime() - buffer.minutes * 60000);
+    const deposit = depositOf(check.a.quote.price);
+    const txRef = `GG-${Date.now().toString(36).toUpperCase()}-${makeCode()}`;
     const sb = await db();
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = makeCode();
-      const { data: row, error } = await sb.from("appointments").insert({
-        confirmation_code: code, customer_name: data.name, phone: data.phone, email: data.email,
-        vehicle_type: data.vehicle, package: data.pkg, duration_minutes: q.minutes, address: data.address,
-        travel_buffer_minutes: buffer.minutes, block_start: blockStart.toISOString(),
-        start_time: start.toISOString(), end_time: end.toISOString(), price: q.price,
-        deposit_amount: depositOf(q.price), deposit_status: "paid", status: "confirmed", source: "booked",
-      }).select("*").single();
-      if (error) {
-        if (error.code === "23P01") return { ok: false as const, reason: "taken" as const }; // DB-level overlap guard
-        if (error.code === "23505") continue; // code collision, retry
-        throw new Error(error.message);
-      }
-      if (data.leadId) await sb.from("leads").update({ status: "converted" }).eq("id", data.leadId);
-      await log([
-        `${buffer.minutes}-minute travel buffer added (${buffer.area}) · ${code}`,
-        `${money(depositOf(q.price))} deposit recorded · ${code}`,
-        `Booking confirmed automatically · ${data.name} · ${data.vehicle} ${data.pkg} · ${fmtDay(start)} ${fmtTime(start)}`,
-        `Confirmation sent to ${data.email} · ${code}`,
-      ]);
-      return { ok: true as const, appointment: row };
+    const { error: pErr } = await sb.from("pending_payments").insert({
+      tx_ref: txRef,
+      payload: { vehicle: data.vehicle, pkg: data.pkg, address: data.address, startIso: data.startIso, name: data.name, phone: data.phone, email: data.email, leadId: data.leadId ?? null },
+    });
+    if (pErr) throw new Error(pErr.message);
+    const res = await fetch(`${FLW_API}/payments`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env['FLW_SECRET_KEY']!}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tx_ref: txRef,
+        amount: deposit,
+        currency: "NGN",
+        redirect_url: data.redirectUrl,
+        customer: { email: data.email, phonenumber: data.phone, name: data.name },
+        customizations: { title: "GlossGo Mobile Detailing", description: `${data.pkg} deposit (30%)`, logo: "" },
+      }),
+    });
+    const json = await res.json();
+    if (json.status !== "success" || !json.data?.link) throw new Error(json.message ?? "Could not start payment");
+    return { ok: true as const, link: json.data.link as string, txRef };
+  });
+
+/** Step 2 of payment: verify with Flutterwave, then insert the booking only if the money really landed. */
+export const verifyDeposit = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ txRef: z.string().trim().min(5).max(80), transactionId: z.string().trim().min(1).max(40) }).parse(d))
+  .handler(async ({ data }) => {
+    const sb = await db();
+    const { data: pending } = await sb.from("pending_payments").select("*").eq("tx_ref", data.txRef).maybeSingle();
+    if (!pending) return { ok: false as const, reason: "unknown" as const };
+    const res = await fetch(`${FLW_API}/transactions/${encodeURIComponent(data.transactionId)}/verify`, {
+      headers: { Authorization: `Bearer ${process.env['FLW_SECRET_KEY']!}` },
+    });
+    const json = await res.json();
+    const tx = json.data;
+    const payload = pending.payload as BookingInput;
+    const expected = depositOf(quote(payload.vehicle, payload.pkg).price);
+    const paid = json.status === "success" && tx?.status === "successful" && tx?.tx_ref === data.txRef
+      && tx?.currency === "NGN" && Number(tx?.amount) >= expected;
+    if (!paid) {
+      await sb.from("pending_payments").delete().eq("tx_ref", data.txRef);
+      return { ok: false as const, reason: "unpaid" as const };
     }
-    throw new Error("Could not generate a confirmation code");
+    const result = await insertBooking(payload, `ref ${data.txRef}`);
+    if (result.ok) await sb.from("pending_payments").delete().eq("tx_ref", data.txRef);
+    return result.ok ? result : { ok: false as const, reason: "taken" as const, payload };
   });
 
 export const lookupBooking = createServerFn({ method: "POST" })
