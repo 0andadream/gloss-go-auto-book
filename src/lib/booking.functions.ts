@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import {
-  PACKAGE_NAMES, VEHICLES, DEPOSIT, computeSlots, dayKeyOf, fmtDay, fmtTime, nextDayKeys, quote, travelBuffer,
+  PACKAGE_NAMES, VEHICLES, DEPOSIT, money, computeSlots, dayKeyOf, fmtDay, fmtTime, nextDayKeys, quote, travelBuffer,
   type PackageName, type Vehicle,
 } from "./glossgo";
 
@@ -106,7 +106,7 @@ export const createBooking = createServerFn({ method: "POST" })
       if (data.leadId) await sb.from("leads").update({ status: "converted" }).eq("id", data.leadId);
       await log([
         `${buffer.minutes}-minute travel buffer added (${buffer.area}) · ${code}`,
-        `$${DEPOSIT} deposit recorded · ${code}`,
+        `${money(DEPOSIT)} deposit recorded · ${code}`,
         `Booking confirmed automatically · ${data.name} · ${data.vehicle} ${data.pkg} · ${fmtDay(start)} ${fmtTime(start)}`,
         `Confirmation sent to ${data.email} · ${code}`,
       ]);

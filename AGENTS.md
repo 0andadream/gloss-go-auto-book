@@ -13,5 +13,5 @@
 - All DB access goes through server functions in src/lib/booking.functions.ts using the admin client; tables have RLS on with no public policies — keeps customer data off the public API.
 - Scheduling rules live in src/lib/glossgo.ts (pure, shared) — one source of truth for pricing, buffers, and slot math on client and server.
 - Occupied range = [block_start, end_time) where block_start = start_time - travel buffer; a Postgres exclusion constraint enforces no overlap — final race-condition guard behind the server re-check.
-- All business times are America/Chicago; slot times shown to customers are arrival times.
+- All business times are Africa/Lagos; slot times shown to customers are arrival times.
 - Abandoned leads = leads not converted and older than 3 minutes (derived at read time, no cron).

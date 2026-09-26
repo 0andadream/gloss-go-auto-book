@@ -78,7 +78,7 @@ function MyBooking() {
         <h1 className="font-heading text-4xl font-extrabold tracking-tight">My Booking</h1>
         <p className="mt-2 text-muted-foreground">Enter your 6-character confirmation code, or the phone number you booked with.</p>
         <form onSubmit={(e) => { e.preventDefault(); void find(); }} className="mt-6 flex gap-2">
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. K7Q2MX or 512-555-0142"
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. K7Q2MX or 0803 555 0142"
             className="flex-1 rounded-full border border-input bg-card px-5 py-3.5 uppercase outline-none placeholder:normal-case focus:border-primary" />
           <button disabled={busy || query.trim().length < 3} className="rounded-full bg-primary px-6 font-semibold text-primary-foreground hover:brightness-110 disabled:opacity-40">
             {busy && mode !== "pick" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Find"}
