@@ -14,7 +14,120 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          address: string
+          block_start: string
+          confirmation_code: string
+          created_at: string
+          customer_name: string
+          deposit_amount: number
+          deposit_status: string
+          duration_minutes: number
+          email: string
+          end_time: string
+          id: string
+          package: string
+          phone: string
+          price: number
+          source: string
+          start_time: string
+          status: string
+          travel_buffer_minutes: number
+          vehicle_type: string
+        }
+        Insert: {
+          address: string
+          block_start: string
+          confirmation_code: string
+          created_at?: string
+          customer_name: string
+          deposit_amount?: number
+          deposit_status?: string
+          duration_minutes: number
+          email: string
+          end_time: string
+          id?: string
+          package: string
+          phone: string
+          price: number
+          source?: string
+          start_time: string
+          status?: string
+          travel_buffer_minutes: number
+          vehicle_type: string
+        }
+        Update: {
+          address?: string
+          block_start?: string
+          confirmation_code?: string
+          created_at?: string
+          customer_name?: string
+          deposit_amount?: number
+          deposit_status?: string
+          duration_minutes?: number
+          email?: string
+          end_time?: string
+          id?: string
+          package?: string
+          phone?: string
+          price?: number
+          source?: string
+          start_time?: string
+          status?: string
+          travel_buffer_minutes?: number
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          last_step_reached: string
+          name: string
+          phone: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          last_step_reached: string
+          name: string
+          phone: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          last_step_reached?: string
+          name?: string
+          phone?: string
+          status?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
