@@ -3,7 +3,8 @@ export const TZ = "Africa/Lagos";
 export const OPEN_MIN = 8 * 60; // 8:00 AM
 export const CLOSE_MIN = 18 * 60; // 6:00 PM
 export const SLOT_STEP = 15;
-export const DEPOSIT = 3000;
+export const DEPOSIT_RATE = 0.3; // deposit is always 30% of the total price
+export const depositOf = (price: number) => Math.round(price * DEPOSIT_RATE);
 
 export const VEHICLES = ["Sedan", "SUV", "Truck", "Van", "Coupe"] as const;
 export type Vehicle = (typeof VEHICLES)[number];
