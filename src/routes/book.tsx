@@ -256,13 +256,13 @@ function BookPage() {
                 </form>
               ) : (
                 <div className="gloss rounded-2xl border border-border bg-card p-6">
-                  <div className="mb-4 rounded-xl border border-border bg-secondary p-4 font-mono text-sm tracking-widest text-muted-foreground">
-                    •••• •••• •••• 4242 <span className="float-right">12/29</span>
-                  </div>
-                  <p className="mb-6 text-sm text-muted-foreground">Demo payment (card or bank transfer) — nothing is actually charged. Your {money(depositOf(q.price))} deposit (30%) is applied to your {money(q.price)} total.</p>
+                  <p className="mb-6 text-sm text-muted-foreground">
+                    You'll be sent to Flutterwave's secure checkout to pay your {money(depositOf(q.price))} deposit (30%) by card, bank transfer or USSD. The remaining {money(q.price - depositOf(q.price))} is due after the service.
+                  </p>
                   <PrimaryButton onClick={pay} disabled={paying}>
-                    {paying ? <><Loader2 className="h-5 w-5 animate-spin" /> Processing…</> : `Pay ${money(depositOf(q.price))} Deposit`}
+                    {paying ? <><Loader2 className="h-5 w-5 animate-spin" /> Opening secure checkout…</> : `Pay ${money(depositOf(q.price))} Deposit`}
                   </PrimaryButton>
+                  <p className="mt-4 text-center text-xs text-muted-foreground">Secured by Flutterwave</p>
                 </div>
               )}
             </Section>
