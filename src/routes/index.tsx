@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Star } from "lucide-react";
 import hero from "@/assets/hero.jpg";
 import { PACKAGES, PACKAGE_NAMES, money } from "@/lib/glossgo";
 
@@ -26,7 +25,7 @@ function useTypewriter(text: string, speed = 36, startDelay = 500) {
   return { displayed: text.slice(0, n), done: n >= text.length };
 }
 
-const NAV = [["Services", "services"], ["How It Works", "how"], ["Reviews", "reviews"]] as const;
+const NAV = [["Services", "services"], ["How It Works", "how"]] as const;
 
 function Landing() {
   const [open, setOpen] = useState(false);
@@ -111,17 +110,6 @@ function Landing() {
           </div>
         </section>
 
-        <section id="reviews" className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex text-primary">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-5 w-5 fill-current" />)}</div>
-            <span className="font-heading text-xl font-bold">4.9 average · 500+ cars detailed across Anambra</span>
-          </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {[["Booked on my lunch break, car was spotless by 3. Unreal.", "Chioma O., Awka"], ["Came to my shop in Onitsha and my Highlander looked brand new. No stress at all.", "Emeka N., Onitsha"], ["Rescheduled from my phone in ten seconds. No back-and-forth.", "Ifeoma A., Nnewi"]].map(([q, a]) => (
-              <blockquote key={a} className="rounded-3xl border border-border bg-card p-7"><p className="text-lg">"{q}"</p><footer className="mt-4 text-sm text-muted-foreground">{a}</footer></blockquote>
-            ))}
-          </div>
-        </section>
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-6 px-5 py-10 text-sm text-muted-foreground sm:px-8">
