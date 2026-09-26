@@ -31,7 +31,7 @@ export function Reviews() {
   const load = () => listReviews().then(setReviews).catch(() => {});
   useEffect(() => { load(); }, []);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     if (!rating) return toast.error("Tap the stars to pick a rating");
     if (!name.trim() || comment.trim().length < 3) return toast.error("Add your name and a short review");

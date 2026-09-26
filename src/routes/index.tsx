@@ -26,7 +26,7 @@ function useTypewriter(text: string, speed = 36, startDelay = 500) {
   return { displayed: text.slice(0, n), done: n >= text.length };
 }
 
-const NAV = [["Services", "services"], ["How It Works", "how"]] as const;
+const NAV = [["Services", "services"], ["How It Works", "how"], ["Reviews", "reviews"]] as const;
 
 function Landing() {
   const [open, setOpen] = useState(false);
