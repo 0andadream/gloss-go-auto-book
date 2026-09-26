@@ -150,30 +150,33 @@ export const initDeposit = createServerFn({ method: "POST" })
     return { ok: true as const, link: json.data.link as string, txRef };
   });
 
-/** Step 2 of payment: verify with Flutterwave, then insert the booking only if the money really landed. */
+/** Shared by the redirect return and the webhook: verify with Flutterwave, then insert the booking. */
+export async function completePaidBooking(txRef: string, transactionId: string) {
+  const sb = await db();
+  const { data: pending } = await sb.from("pending_payments").select("*").eq("tx_ref", txRef).maybeSingle();
+  if (!pending) return { ok: false as const, reason: "unknown" as const };
+  const res = await fetch(`${FLW_API}/transactions/${encodeURIComponent(transactionId)}/verify`, {
+    headers: { Authorization: `Bearer ${process.env['FLW_SECRET_KEY']!}` },
+  });
+  const json = await res.json();
+  const tx = json.data;
+  const payload = pending.payload as BookingInput;
+  const expected = depositOf(quote(payload.vehicle, payload.pkg).price);
+  const paid = json.status === "success" && tx?.status === "successful" && tx?.tx_ref === txRef
+    && tx?.currency === "NGN" && Number(tx?.amount) >= expected;
+  if (!paid) {
+    await sb.from("pending_payments").delete().eq("tx_ref", txRef);
+    return { ok: false as const, reason: "unpaid" as const };
+  }
+  const result = await insertBooking(payload, `ref ${txRef}`);
+  if (result.ok) await sb.from("pending_payments").delete().eq("tx_ref", txRef);
+  return result.ok ? result : { ok: false as const, reason: "taken" as const, payload };
+}
+
+/** Step 2 of payment (customer redirect back from Flutterwave). */
 export const verifyDeposit = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ txRef: z.string().trim().min(5).max(80), transactionId: z.string().trim().min(1).max(40) }).parse(d))
-  .handler(async ({ data }) => {
-    const sb = await db();
-    const { data: pending } = await sb.from("pending_payments").select("*").eq("tx_ref", data.txRef).maybeSingle();
-    if (!pending) return { ok: false as const, reason: "unknown" as const };
-    const res = await fetch(`${FLW_API}/transactions/${encodeURIComponent(data.transactionId)}/verify`, {
-      headers: { Authorization: `Bearer ${process.env['FLW_SECRET_KEY']!}` },
-    });
-    const json = await res.json();
-    const tx = json.data;
-    const payload = pending.payload as BookingInput;
-    const expected = depositOf(quote(payload.vehicle, payload.pkg).price);
-    const paid = json.status === "success" && tx?.status === "successful" && tx?.tx_ref === data.txRef
-      && tx?.currency === "NGN" && Number(tx?.amount) >= expected;
-    if (!paid) {
-      await sb.from("pending_payments").delete().eq("tx_ref", data.txRef);
-      return { ok: false as const, reason: "unpaid" as const };
-    }
-    const result = await insertBooking(payload, `ref ${data.txRef}`);
-    if (result.ok) await sb.from("pending_payments").delete().eq("tx_ref", data.txRef);
-    return result.ok ? result : { ok: false as const, reason: "taken" as const, payload };
-  });
+  .handler(async ({ data }) => completePaidBooking(data.txRef, data.transactionId));
 
 export const lookupBooking = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ query: z.string().trim().min(3).max(40) }).parse(d))
