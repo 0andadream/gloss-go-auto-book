@@ -9,7 +9,7 @@ import { MiniHeader } from "@/components/glossgo/MiniHeader";
 import { SlotPicker } from "@/components/glossgo/SlotPicker";
 import { createBooking, createLead, getAvailability } from "@/lib/booking.functions";
 import {
-  DEPOSIT, PACKAGES, PACKAGE_NAMES, VEHICLES, fmtDay, fmtTime, money, quote, travelBuffer,
+  depositOf, PACKAGES, PACKAGE_NAMES, VEHICLES, fmtDay, fmtTime, money, quote, travelBuffer,
   type PackageName, type Vehicle,
 } from "@/lib/glossgo";
 
