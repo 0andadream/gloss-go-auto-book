@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BookRouteImport } from './routes/book'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MyBookingRouteImport } from './routes/my-booking'
+import { Route as ApiPublicFlutterwaveWebhookRouteImport } from './routes/api/public/flutterwave-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,26 @@ const MyBookingRoute = MyBookingRouteImport.update({
   path: '/my-booking',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicFlutterwaveWebhookRoute =
+  ApiPublicFlutterwaveWebhookRouteImport.update({
+    id: '/api/public/flutterwave-webhook',
+    path: '/api/public/flutterwave-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/my-booking': typeof MyBookingRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/my-booking': typeof MyBookingRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +62,30 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/dashboard': typeof DashboardRoute
   '/my-booking': typeof MyBookingRoute
+  '/api/public/flutterwave-webhook': typeof ApiPublicFlutterwaveWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/book' | '/dashboard' | '/my-booking'
+  fullPaths:
+    | '/'
+    | '/book'
+    | '/dashboard'
+    | '/my-booking'
+    | '/api/public/flutterwave-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/book' | '/dashboard' | '/my-booking'
-  id: '__root__' | '/' | '/book' | '/dashboard' | '/my-booking'
+  to:
+    | '/'
+    | '/book'
+    | '/dashboard'
+    | '/my-booking'
+    | '/api/public/flutterwave-webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/book'
+    | '/dashboard'
+    | '/my-booking'
+    | '/api/public/flutterwave-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +93,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   DashboardRoute: typeof DashboardRoute
   MyBookingRoute: typeof MyBookingRoute
+  ApiPublicFlutterwaveWebhookRoute: typeof ApiPublicFlutterwaveWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MyBookingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/flutterwave-webhook': {
+      id: '/api/public/flutterwave-webhook'
+      path: '/api/public/flutterwave-webhook'
+      fullPath: '/api/public/flutterwave-webhook'
+      preLoaderRoute: typeof ApiPublicFlutterwaveWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +141,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   DashboardRoute: DashboardRoute,
   MyBookingRoute: MyBookingRoute,
+  ApiPublicFlutterwaveWebhookRoute: ApiPublicFlutterwaveWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
