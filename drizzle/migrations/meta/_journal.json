@@ -15,6 +15,13 @@
       "when": 1790435383129,
       "tag": "0001_create_reviews",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790436558731,
+      "tag": "0002_create_pending_payments",
+      "breakpoints": true
     }
   ]
 }

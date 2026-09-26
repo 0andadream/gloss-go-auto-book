@@ -128,6 +128,24 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_payments: {
+        Row: {
+          created_at: string
+          payload: Json
+          tx_ref: string
+        }
+        Insert: {
+          created_at?: string
+          payload: Json
+          tx_ref: string
+        }
+        Update: {
+          created_at?: string
+          payload?: Json
+          tx_ref?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string
