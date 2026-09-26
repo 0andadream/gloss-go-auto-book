@@ -142,3 +142,48 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---------- GlossGo brand (dark, premium) ---------- */
+:root {
+  --font-heading: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --radius: 0.9rem;
+  --background: oklch(0.14 0.005 260);
+  --foreground: oklch(0.97 0.003 260);
+  --card: oklch(0.19 0.006 260);
+  --card-foreground: oklch(0.97 0.003 260);
+  --popover: oklch(0.19 0.006 260);
+  --popover-foreground: oklch(0.97 0.003 260);
+  --primary: oklch(0.62 0.21 256);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.24 0.008 260);
+  --secondary-foreground: oklch(0.97 0.003 260);
+  --muted: oklch(0.24 0.008 260);
+  --muted-foreground: oklch(0.7 0.01 260);
+  --accent: oklch(0.26 0.03 256);
+  --accent-foreground: oklch(0.97 0.003 260);
+  --destructive: oklch(0.65 0.2 25);
+  --success: oklch(0.74 0.16 155);
+  --warning: oklch(0.8 0.15 80);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.62 0.21 256);
+  --gloss: linear-gradient(145deg, oklch(1 0 0 / 7%), oklch(1 0 0 / 0%) 45%);
+  --glow: 0 10px 40px -10px oklch(0.62 0.21 256 / 60%);
+}
+@theme inline {
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+}
+body { font-family: var(--font-body); }
+.font-heading { font-family: var(--font-heading); }
+.gloss { background-image: var(--gloss); }
+.shadow-glow { box-shadow: var(--glow); }
+@keyframes blink { 50% { opacity: 0; } }
+.animate-blink { animation: blink 1s step-end infinite; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.animate-rise { animation: rise 600ms cubic-bezier(.2,.7,.2,1) both; }
+@keyframes slowzoom { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+.animate-slowzoom { animation: slowzoom 24s ease-in-out infinite alternate; }
