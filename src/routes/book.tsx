@@ -35,7 +35,7 @@ const ICONS: Record<Vehicle, typeof Car> = { Sedan: Car, SUV: CarFront, Truck: T
 type Appt = { confirmation_code: string; start_time: string; price: number; deposit_amount: number; vehicle_type: string; package: string; address: string; customer_name: string; travel_buffer_minutes: number; duration_minutes: number };
 
 function BookPage() {
-  const { pkg: prePkg } = Route.useSearch();
+  const { pkg: prePkg, status: payStatus, tx_ref, transaction_id } = Route.useSearch();
   const [step, setStep] = useState(0);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [pkg, setPkg] = useState<PackageName | null>(prePkg ?? null);
@@ -49,7 +49,38 @@ function BookPage() {
 
   const availFn = useServerFn(getAvailability);
   const leadFn = useServerFn(createLead);
-  const bookFn = useServerFn(createBooking);
+  const initFn = useServerFn(initDeposit);
+  const verifyFn = useServerFn(verifyDeposit);
+
+  // Returning from Flutterwave checkout: verify the payment, then create the booking.
+  useEffect(() => {
+    if (!tx_ref || !transaction_id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await verifyFn({ data: { txRef: tx_ref, transactionId: transaction_id } });
+        if (cancelled) return;
+        if (r.ok) {
+          setBooked(r.appointment as Appt);
+          setStep(6);
+        } else if (r.reason === "taken") {
+          const p = r.payload;
+          setVehicle(p.vehicle); setPkg(p.pkg); setAddress(p.address);
+          setContact({ name: p.name, phone: p.phone, email: p.email });
+          setLeadId(p.leadId ?? null);
+          toast.error("Payment received, but that time was just booked — please choose another. You won't be charged twice.");
+          setStep(3);
+        } else {
+          toast.error(r.reason === "unpaid" ? "Payment wasn't completed — no charge was made. Please try again." : "We couldn't find that payment. Please start again.");
+          setStep(0);
+        }
+      } catch {
+        if (!cancelled) { toast.error("Could not verify your payment. If you were charged, contact us with your receipt."); setStep(0); }
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const avail = useQuery({
     queryKey: ["avail", vehicle, pkg, address],
