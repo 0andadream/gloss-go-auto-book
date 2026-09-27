@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Check, Loader2 } from "lucide-react";
 import { MiniHeader } from "@/components/glossgo/MiniHeader";
 import { SlotPicker } from "@/components/glossgo/SlotPicker";
-import { getAvailability, lookupBooking, rescheduleBooking } from "@/lib/booking.functions";
+import { customerCancelBooking, getAvailability, lookupBooking, rescheduleBooking } from "@/lib/booking.functions";
 import { fmtDay, fmtTime, money, type PackageName, type Vehicle } from "@/lib/glossgo";
 
 export const Route = createFileRoute("/my-booking")({
@@ -36,6 +36,17 @@ function MyBooking() {
   const lookupFn = useServerFn(lookupBooking);
   const availFn = useServerFn(getAvailability);
   const reschedFn = useServerFn(rescheduleBooking);
+  const cancelFn = useServerFn(customerCancelBooking);
+  async function cancelIt() {
+    if (!appt) return;
+    const code = window.prompt("To cancel, type your 6-character confirmation code:");
+    if (!code) return;
+    setBusy(true);
+    try {
+      const r = await cancelFn({ data: { id: appt.id, code: code.trim().toUpperCase() } });
+      setAppt(r.appointment as Appt); toast.success("Your booking has been cancelled.");
+    } catch { toast.error("That code doesn't match this booking."); } finally { setBusy(false); }
+  }
 
   async function find(q = query) {
     setBusy(true);
@@ -110,11 +121,16 @@ function MyBooking() {
                 <Row l="Where" v={appt.address} />
                 <Row l="Total" v={`${money(Number(appt.price))} (deposit ${appt.deposit_status})`} />
               </div>
-              {mode !== "pick" && (
-                <button onClick={() => { setMode("pick"); setSlot(null); setDayKey(null); }}
-                  className="mt-6 w-full rounded-full bg-primary py-3.5 font-semibold text-primary-foreground shadow-glow hover:brightness-110">
-                  Reschedule
-                </button>
+              {mode !== "pick" && appt.status !== "cancelled" && (
+                <>
+                  <button onClick={() => { setMode("pick"); setSlot(null); setDayKey(null); }}
+                    className="mt-6 w-full rounded-full bg-primary py-3.5 font-semibold text-primary-foreground shadow-glow hover:brightness-110">
+                    Reschedule
+                  </button>
+                  <button onClick={cancelIt} disabled={busy} className="mt-3 w-full text-sm text-muted-foreground underline hover:text-destructive">
+                    Cancel this booking
+                  </button>
+                </>
               )}
             </div>
 

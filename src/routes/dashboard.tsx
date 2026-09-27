@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Activity, Bot, Clock, DollarSign, Hand, Loader2 } from "lucide-react";
 import { MiniHeader } from "@/components/glossgo/MiniHeader";
-import { getDashboard, sendFollowUp } from "@/lib/booking.functions";
+import { checkOwnerPin, getDashboard, ownerCancelBooking, sendFollowUp } from "@/lib/booking.functions";
 import { fmtDay, fmtTime, money } from "@/lib/glossgo";
 
 export const Route = createFileRoute("/dashboard")({
@@ -23,12 +23,48 @@ export const Route = createFileRoute("/dashboard")({
 const MIN_SAVED = 8;
 
 function Dashboard() {
+  const [pin, setPin] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => { setPin(sessionStorage.getItem("gg_pin")); setReady(true); }, []);
+  if (!ready) return <div className="min-h-screen bg-background" />;
+  if (!pin) return <PinGate onOk={(p) => { sessionStorage.setItem("gg_pin", p); setPin(p); }} />;
+  return <DashboardInner pin={pin} onLock={() => { sessionStorage.removeItem("gg_pin"); setPin(null); }} />;
+}
+
+function PinGate({ onOk }: { onOk: (pin: string) => void }) {
+  const check = useServerFn(checkOwnerPin);
+  const [v, setV] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="min-h-screen bg-background">
+      <MiniHeader />
+      <main className="mx-auto max-w-sm px-5 pt-20">
+        <h1 className="font-heading text-3xl font-extrabold">Owner access</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Enter your PIN to see bookings.</p>
+        <form className="mt-6 grid gap-3" onSubmit={async (e) => {
+          e.preventDefault(); setBusy(true); setErr("");
+          try { const r = await check({ data: { pin: v } }); if (r.ok) onOk(v); else setErr("Wrong PIN"); } finally { setBusy(false); }
+        }}>
+          <input type="password" inputMode="numeric" autoFocus value={v} onChange={(e) => setV(e.target.value)}
+            className="rounded-2xl border border-input bg-card px-4 py-4 text-center text-2xl tracking-[0.5em] outline-none focus:border-primary" />
+          {err && <p className="text-sm text-destructive">{err}</p>}
+          <button disabled={!v || busy} className="rounded-full bg-primary py-3.5 font-semibold text-primary-foreground disabled:opacity-40">{busy ? "Checking…" : "Unlock"}</button>
+        </form>
+      </main>
+    </div>
+  );
+}
+
+function DashboardInner({ pin, onLock }: { pin: string; onLock: () => void }) {
+  const cancelFn = useServerFn(ownerCancelBooking);
+  const [cancelling, setCancelling] = useState<string | null>(null);
   const fn = useServerFn(getDashboard);
   const followFn = useServerFn(sendFollowUp);
   const qc = useQueryClient();
   const [sending, setSending] = useState<string | null>(null);
   const { data, isLoading, dataUpdatedAt } = useQuery({
-    queryKey: ["dashboard"], queryFn: () => fn(), refetchInterval: 5000, refetchOnWindowFocus: true, refetchOnMount: "always",
+    queryKey: ["dashboard"], queryFn: async () => { try { return await fn({ data: { pin } }); } catch (e) { if (String(e).includes("Wrong PIN")) onLock(); throw e; } }, refetchInterval: 5000, refetchOnWindowFocus: true, refetchOnMount: "always",
   });
 
   const automated = data?.metrics.automated ?? 0;
@@ -41,7 +77,7 @@ function Dashboard() {
             <h1 className="font-heading text-3xl font-extrabold tracking-tight">Good day, Matt</h1>
             <p className="text-sm text-muted-foreground">Live from your booking database · refreshes every 5s</p>
           </div>
-          {dataUpdatedAt > 0 && <span className="text-xs text-muted-foreground">Updated {new Date(dataUpdatedAt).toLocaleTimeString()}</span>}
+          <div className="flex items-center gap-3">{dataUpdatedAt > 0 && <span className="text-xs text-muted-foreground">Updated {new Date(dataUpdatedAt).toLocaleTimeString()}</span>}<button onClick={onLock} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">Lock</button></div>
         </div>
 
         {isLoading || !data ? (
@@ -77,6 +113,15 @@ function Dashboard() {
                         <Chip className={a.deposit_status === "paid" ? "text-success" : ""}>Deposit {a.deposit_status}</Chip>
                         <Chip>Status {a.status}</Chip>
                         <Chip className="font-mono tracking-widest">{a.confirmation_code}</Chip>
+                        <button disabled={cancelling === a.id}
+                          onClick={async () => {
+                            if (!confirm(`Cancel ${a.customer_name}'s booking (${a.confirmation_code})? The slot will open again.`)) return;
+                            setCancelling(a.id);
+                            try { await cancelFn({ data: { pin, id: a.id } }); await qc.invalidateQueries({ queryKey: ["dashboard"] }); } finally { setCancelling(null); }
+                          }}
+                          className="ml-auto rounded-full border border-destructive/60 px-3 py-1 text-destructive hover:bg-destructive/10 disabled:opacity-50">
+                          {cancelling === a.id ? "Cancelling…" : "Cancel booking"}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -109,7 +154,7 @@ function Dashboard() {
                           <div className="mt-2 text-xs font-semibold text-success">Follow-up scheduled</div>
                         ) : (
                           <button disabled={sending === l.id}
-                            onClick={async () => { setSending(l.id); try { await followFn({ data: { id: l.id } }); await qc.invalidateQueries({ queryKey: ["dashboard"] }); } finally { setSending(null); } }}
+                            onClick={async () => { setSending(l.id); try { await followFn({ data: { id: l.id, pin } }); await qc.invalidateQueries({ queryKey: ["dashboard"] }); } finally { setSending(null); } }}
                             className="mt-2 rounded-full border border-primary px-3 py-1 text-xs text-primary hover:bg-primary/10 disabled:opacity-50">
                             {sending === l.id ? "Sending…" : "Send Follow-up"}
                           </button>

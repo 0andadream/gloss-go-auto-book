@@ -42,7 +42,9 @@ function BookPage() {
   const [step, setStep] = useState(0);
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [pkg, setPkg] = useState<PackageName | null>(prePkg ?? null);
-  const [address, setAddress] = useState("");
+  const [town, setTown] = useState("");
+  const [street, setStreet] = useState("");
+  const address = town ? (street.trim() ? `${street.trim()}, ${town}` : town) : "";
   const [dayKey, setDayKey] = useState<string | null>(null);
   const [slot, setSlot] = useState<string | null>(null);
   const [contact, setContact] = useState({ name: "", phone: "", email: "" });
@@ -50,6 +52,31 @@ function BookPage() {
   const [paying, setPaying] = useState(false);
   const [booked, setBooked] = useState<Appt | null>(null);
   const verificationStarted = useRef(false);
+  const restored = useRef(false);
+
+  // Keep unfinished progress across refreshes (this tab only).
+  useEffect(() => {
+    if (tx_ref || transaction_id) { restored.current = true; return; }
+    try {
+      const raw = sessionStorage.getItem("gg_booking");
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.vehicle) setVehicle(d.vehicle);
+        if (d.pkg && !prePkg) setPkg(d.pkg);
+        if (d.town) setTown(d.town);
+        if (d.street) setStreet(d.street);
+        if (d.contact) setContact(d.contact);
+        if (d.leadId) setLeadId(d.leadId);
+        if (typeof d.step === "number" && d.step < 6) setStep(Math.min(d.step, 3));
+      }
+    } catch { /* ignore */ }
+    restored.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!restored.current) return;
+    if (step >= 6) { sessionStorage.removeItem("gg_booking"); return; }
+    sessionStorage.setItem("gg_booking", JSON.stringify({ step, vehicle, pkg, town, street, contact, leadId }));
+  }, [step, vehicle, pkg, town, street, contact, leadId]);
 
   const availFn = useServerFn(getAvailability);
   const leadFn = useServerFn(createLead);
@@ -70,7 +97,7 @@ function BookPage() {
           setStep(6);
         } else if (r.reason === "taken") {
           const p = r.payload;
-          setVehicle(p.vehicle); setPkg(p.pkg); setAddress(p.address);
+          setVehicle(p.vehicle); setPkg(p.pkg); { const parts = String(p.address).split(", "); setTown(parts.pop() ?? ""); setStreet(parts.join(", ")); }
           setContact({ name: p.name, phone: p.phone, email: p.email });
           setLeadId(p.leadId ?? null);
           toast.error("Payment received, but that time was just booked — please choose another. You won't be charged twice.");
@@ -90,7 +117,7 @@ function BookPage() {
   const avail = useQuery({
     queryKey: ["avail", vehicle, pkg, address],
     queryFn: () => availFn({ data: { vehicle: vehicle!, pkg: pkg!, address } }),
-    enabled: step === 3 && !!vehicle && !!pkg && address.trim().length >= 3,
+    enabled: step === 3 && !!vehicle && !!pkg && !!town,
     staleTime: 0,
   });
 
@@ -200,18 +227,26 @@ function BookPage() {
 
           {step === 2 && (
             <Section title="Where's the car?" sub="We come to your home or office anywhere in Awka, Onitsha, Nnewi and environs.">
-              <form onSubmit={(e) => { e.preventDefault(); if (address.trim().length >= 3) { setDayKey(null); setSlot(null); go(3); } }}>
+              <form onSubmit={(e) => { e.preventDefault(); if (town) { setDayKey(null); setSlot(null); go(3); } }}>
+                <label className="mb-2 block text-sm text-muted-foreground">Town</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                  <input autoFocus value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. Onitsha, Fegge or Awka, Amawbia"
-                    className="w-full rounded-2xl border border-input bg-card py-5 pl-12 pr-4 text-lg outline-none focus:border-primary" />
+                  <MapPin className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                  <select value={town} onChange={(e) => setTown(e.target.value)}
+                    className="w-full appearance-none rounded-2xl border border-input bg-card py-5 pl-12 pr-4 text-lg outline-none focus:border-primary">
+                    <option value="" disabled>Choose your town…</option>
+                    {TOWNS.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
                 </div>
-                {address.trim().length >= 3 && (
+                <label className="mb-2 mt-5 block text-sm text-muted-foreground">Street / landmark (optional)</label>
+                <input value={street} onChange={(e) => setStreet(e.target.value)} placeholder="e.g. 12 Zik Avenue, near the church" maxLength={200}
+                  className="w-full rounded-2xl border border-input bg-card px-4 py-4 outline-none focus:border-primary" />
+                <p className="mt-2 text-xs text-muted-foreground">Not on the list? We currently serve Anambra State only.</p>
+                {town && (
                   <p className="mt-3 text-sm text-muted-foreground">
                     Service area: <span className="text-foreground">{buf.area}</span> · {buf.minutes} min travel buffer{!buf.matched && " (default)"}
                   </p>
                 )}
-                <PrimaryButton disabled={address.trim().length < 3} className="mt-8">See available times</PrimaryButton>
+                <PrimaryButton disabled={!town} className="mt-8">See available times</PrimaryButton>
               </form>
             </Section>
           )}
