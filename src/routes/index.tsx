@@ -94,8 +94,8 @@ function Landing() {
               GlossGo brings professional, hands on car detailing straight to your driveway or office parking lot, no shop visit required. Owner operated by Matt, we serve Awka, Onitsha, Nnewi and surrounding areas across Anambra, treating every vehicle like it's our own.
             </p>
           </div>
-          <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8 sm:gap-10">
-            {[["500+", "Cars detailed"], ["100%", "Mobile — we come to you"], ["60 sec", "Average booking time"]].map(([n, l]) => (
+          <div className="mt-10 grid grid-cols-2 gap-6 border-t border-border pt-8 sm:gap-10">
+            {[["100%", "Mobile, we come to you"], ["60 sec", "Average booking time"]].map(([n, l]) => (
               <div key={l}>
                 <div className="font-heading text-2xl font-extrabold text-foreground sm:text-4xl">{n}</div>
                 <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{l}</div>
