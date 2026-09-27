@@ -91,7 +91,7 @@ function Landing() {
           <div className="max-w-2xl">
             <h2 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">About GlossGo</h2>
             <p className="mt-4 text-muted-foreground">
-              GlossGo brings professional, hands-on car detailing straight to your driveway or office parking lot — no shop visit required. Owner-operated by Matt, we serve Awka, Onitsha, Nnewi and surrounding areas across Anambra, treating every vehicle like it's our own.
+              GlossGo brings professional, hands on car detailing straight to your driveway or office parking lot, no shop visit required. Owner operated by Matt, we serve Awka, Onitsha, Nnewi and surrounding areas across Anambra, treating every vehicle like it's our own.
             </p>
           </div>
           <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8 sm:gap-10">
