@@ -11,6 +11,7 @@ import { createLead, getAvailability, initDeposit, verifyDeposit } from "@/lib/b
 import {
   depositOf, PACKAGES, PACKAGE_NAMES, VEHICLES, fmtDay, fmtTime, money, quote, travelBuffer,
   type PackageName, type Vehicle,
+  TOWNS,
 } from "@/lib/glossgo";
 
 export const Route = createFileRoute("/book")({
