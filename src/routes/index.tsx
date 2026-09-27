@@ -87,6 +87,23 @@ function Landing() {
 
       {/* Below the fold */}
       <div className="relative z-[1] bg-background">
+        <section id="about" className="mx-auto max-w-6xl px-5 pt-24 sm:px-8">
+          <div className="max-w-2xl">
+            <h2 className="font-heading text-3xl font-extrabold tracking-tight sm:text-4xl">About GlossGo</h2>
+            <p className="mt-4 text-muted-foreground">
+              GlossGo brings professional, hands-on car detailing straight to your driveway or office parking lot — no shop visit required. Owner-operated by Matt, we serve Awka, Onitsha, Nnewi and surrounding areas across Anambra, treating every vehicle like it's our own.
+            </p>
+          </div>
+          <div className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-8 sm:gap-10">
+            {[["500+", "Cars detailed"], ["100%", "Mobile — we come to you"], ["60 sec", "Average booking time"]].map(([n, l]) => (
+              <div key={l}>
+                <div className="font-heading text-2xl font-extrabold text-foreground sm:text-4xl">{n}</div>
+                <div className="mt-1 text-xs text-muted-foreground sm:text-sm">{l}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section id="services" className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
           <h2 className="font-heading text-4xl font-extrabold tracking-tight sm:text-5xl">Three ways to shine.</h2>
           <p className="mt-3 text-muted-foreground">SUVs, trucks and vans add 20 min and ₦5,000 to Full and Premium details.</p>
