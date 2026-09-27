@@ -16,3 +16,5 @@
 - All business times are Africa/Lagos; slot times shown to customers are arrival times.
 - Abandoned leads = leads not converted and older than 3 minutes (derived at read time, no cron).
 - Payment completion is idempotent by appointments.payment_tx_ref so the Flutterwave webhook and browser return can safely race.
+- Owner dashboard server fns require OWNER_PIN (checked server-side, constant-time); PIN kept in sessionStorage client-side — solo owner, no accounts needed.
+- Service area is enforced server-side: availability throws unless the address matches a known Anambra town keyword; customers pick a town from TOWNS.
