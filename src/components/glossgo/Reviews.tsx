@@ -33,6 +33,7 @@ export function Reviews() {
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const load = () => listReviews().then(setReviews).catch(() => {});
   useEffect(() => { load(); }, []);
