@@ -40,6 +40,17 @@ export const BUFFER_TABLE: { keywords: string[]; area: string; minutes: number }
   { keywords: ["ekwulobia", "aguata"], area: "Ekwulobia", minutes: 30 },
 ];
 export const DEFAULT_BUFFER = 25;
+const OTHER_ANAMBRA = ["nkpor", "obosi", "ogidi", "ihiala", "agulu", "nteje", "otuocha", "umunze", "abagana", "igbo-ukwu", "oko", "ozubulu", "neni", "enugwu-ukwu", "nawfia", "umuoji", "oba", "ukpor", "atani", "achalla"];
+BUFFER_TABLE.push({ keywords: OTHER_ANAMBRA, area: "Anambra (other town)", minutes: DEFAULT_BUFFER });
+
+/** Towns customers pick from — only these are served. */
+export const TOWNS = [
+  "Awka", "Amawbia", "Okpuno", "Nibo", "Ifite (Unizik)",
+  "Onitsha", "Fegge", "Nkpor", "Obosi", "Ogidi",
+  "Nnewi", "Umudim", "Otolo", "Ozubulu", "Ukpor",
+  "Ekwulobia", "Aguata", "Igbo-Ukwu", "Umunze", "Oko",
+  "Agulu", "Abagana", "Nteje", "Enugwu-Ukwu", "Nawfia", "Neni", "Oba", "Umuoji", "Ihiala", "Otuocha", "Atani", "Achalla",
+].sort();
 
 export function travelBuffer(address: string) {
   const a = address.toLowerCase();

@@ -22,6 +22,7 @@ async function fetchBusy(excludeId?: string) {
 async function availability(vehicle: Vehicle, pkg: PackageName, address: string, excludeId?: string) {
   const qte = quote(vehicle, pkg);
   const buf = travelBuffer(address);
+  if (!buf.matched) throw new Error("Outside service area — we only serve Anambra State towns.");
   const busy = await fetchBusy(excludeId);
   const days = nextDayKeys(7).map((dayKey) => ({
     dayKey,
@@ -238,9 +239,48 @@ export const rescheduleBooking = createServerFn({ method: "POST" })
 
 export const LEAD_ABANDON_MINUTES = 3;
 
-export const getDashboard = createServerFn({ method: "GET" }).handler(async () => {
+function checkPin(pin: string) {
+  const want = process.env["OWNER_PIN"] ?? "";
+  if (!want) throw new Error("Owner PIN not set");
+  const a = new TextEncoder().encode(pin), b = new TextEncoder().encode(want);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) diff |= (a[i] ?? 0) ^ (b[i] ?? 0);
+  if (diff !== 0) throw new Error("Wrong PIN");
+}
+const pinSchema = z.string().min(1).max(64);
+
+export const checkOwnerPin = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ pin: pinSchema }).parse(d))
+  .handler(async ({ data }) => { try { checkPin(data.pin); return { ok: true }; } catch { return { ok: false }; } });
+
+async function cancelRow(id: string, who: string) {
   const sb = await db();
-  const todayStart = new Date(Date.now() - 12 * 3600000).toISOString();
+  const { data: row, error } = await sb.from("appointments").update({ status: "cancelled" }).eq("id", id).neq("status", "cancelled").select("*").single();
+  if (error || !row) throw new Error("Booking not found or already cancelled");
+  await log([`Booking cancelled by ${who} · ${row.confirmation_code} · ${fmtDay(row.start_time)} ${fmtTime(row.start_time)} slot released`]);
+  return row;
+}
+
+export const ownerCancelBooking = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ pin: pinSchema, id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => { checkPin(data.pin); await cancelRow(data.id, "owner"); return { ok: true }; });
+
+export const customerCancelBooking = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ id: z.string().uuid(), code: z.string().trim().length(6) }).parse(d))
+  .handler(async ({ data }) => {
+    const sb = await db();
+    const { data: row } = await sb.from("appointments").select("id, confirmation_code").eq("id", data.id).single();
+    if (!row || row.confirmation_code !== data.code.toUpperCase()) throw new Error("Code does not match");
+    const r = await cancelRow(data.id, "customer");
+    return { ok: true, appointment: r };
+  });
+
+export const getDashboard = createServerFn({ method: "POST" })
+  .inputValidator((d) => z.object({ pin: pinSchema }).parse(d))
+  .handler(async ({ data: input }) => {
+  checkPin(input.pin);
+  const sb = await db();
+  const todayStart = new Date().toISOString();
   const [upcoming, all, activity, leads] = await Promise.all([
     sb.from("appointments").select("*").neq("status", "cancelled").gte("end_time", todayStart).order("start_time"),
     sb.from("appointments").select("status, deposit_status, deposit_amount"),
@@ -257,8 +297,9 @@ export const getDashboard = createServerFn({ method: "GET" }).handler(async () =
 });
 
 export const sendFollowUp = createServerFn({ method: "POST" })
-  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d) => z.object({ id: z.string().uuid(), pin: pinSchema }).parse(d))
   .handler(async ({ data }) => {
+    checkPin(data.pin);
     const sb = await db();
     const { data: lead, error } = await sb.from("leads").update({ status: "Follow-up scheduled" }).eq("id", data.id).select("*").single();
     if (error) throw new Error(error.message);
