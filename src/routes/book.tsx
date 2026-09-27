@@ -14,10 +14,13 @@ import {
 } from "@/lib/glossgo";
 
 export const Route = createFileRoute("/book")({
-  validateSearch: (s) => z.object({
-    pkg: z.enum(PACKAGE_NAMES as [PackageName, ...PackageName[]]).optional(),
-    status: z.string().optional(), tx_ref: z.string().optional(), transaction_id: z.string().optional(),
-  }).parse(s),
+  validateSearch: (s) => {
+    const str = z.union([z.string(), z.number()]).transform(String).optional().catch(undefined);
+    return z.object({
+      pkg: z.enum(PACKAGE_NAMES as [PackageName, ...PackageName[]]).optional().catch(undefined),
+      status: str, tx_ref: str, transaction_id: str,
+    }).parse(s);
+  },
   head: () => ({
     meta: [
       { title: "Book a Mobile Detail — GlossGo Anambra" },
