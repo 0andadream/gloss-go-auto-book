@@ -5,6 +5,12 @@ import { addReview, listReviews } from "@/lib/booking.functions";
 
 type Review = { id: string; name: string; rating: number; comment: string; created_at: string };
 
+const FEATURED = [
+  { name: "Chinedu O., Awka", comment: "Matt showed up right on time in Awka and my SUV looked showroom-new after. Booked and done in two minutes flat." },
+  { name: "Ifeoma A., Onitsha", comment: "I didn't expect to get an actual confirmed time slot without calling back and forth. This is how it should work." },
+  { name: "Uche N., Nnewi", comment: "Premium detail on my Camry was worth every naira — engine bay included. Will be booking again." },
+];
+
 function Stars({ value, onPick, size = 18 }: { value: number; onPick?: (n: number) => void; size?: number }) {
   const [hover, setHover] = useState(0);
   const shown = hover || value;
@@ -68,7 +74,15 @@ export function Reviews() {
           </button>
         </form>
         <div className="space-y-4">
-          {reviews.length === 0 && <p className="text-muted-foreground">No reviews yet — be the first.</p>}
+          {FEATURED.map((r) => (
+            <div key={r.name} className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div className="font-semibold">{r.name}</div>
+                <Stars value={5} size={14} />
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>
+            </div>
+          ))}
           {reviews.map((r) => (
             <div key={r.id} className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-center justify-between gap-3">
