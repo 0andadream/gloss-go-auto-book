@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Car, CarFront, Truck, Bus, Gauge, ArrowLeft, Check, Loader2, MapPin } from "lucide-react";
@@ -49,6 +49,7 @@ function BookPage() {
   const [leadId, setLeadId] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [booked, setBooked] = useState<Appt | null>(null);
+  const verificationStarted = useRef(false);
 
   const availFn = useServerFn(getAvailability);
   const leadFn = useServerFn(createLead);
@@ -57,7 +58,8 @@ function BookPage() {
 
   // Returning from Flutterwave checkout: verify the payment, then create the booking.
   useEffect(() => {
-    if (!tx_ref || !transaction_id) return;
+    if (!tx_ref || !transaction_id || verificationStarted.current) return;
+    verificationStarted.current = true;
     let cancelled = false;
     (async () => {
       try {
