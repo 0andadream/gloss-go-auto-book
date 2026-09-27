@@ -115,7 +115,7 @@ function Landing() {
 
         <footer className="border-t border-border">
           <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-6 px-5 py-10 text-sm text-muted-foreground sm:px-8">
-            <div><div className="font-heading text-lg font-extrabold text-foreground">Gloss<span className="text-primary">Go</span></div>Owner-operated by Matt · +234 901 682 5424 · societyhatesmatt@gmail.com</div>
+            <div><div className="font-heading text-lg font-extrabold text-foreground">Gloss<span className="text-primary">Go</span></div>Owner-operated by Matt · societyhatesmatt@gmail.com</div>
             <div>Serving Awka, Onitsha, Nnewi and environs · 8 AM – 6 PM daily</div>
             <div className="flex gap-4"><Link to="/my-booking" className="hover:text-foreground">My Booking</Link><Link to="/dashboard" className="hover:text-foreground">Owner</Link></div>
           </div>
