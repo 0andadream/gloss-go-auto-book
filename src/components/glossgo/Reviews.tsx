@@ -6,9 +6,9 @@ import { addReview, listReviews } from "@/lib/booking.functions";
 type Review = { id: string; name: string; rating: number; comment: string; created_at: string };
 
 const FEATURED = [
-  { name: "Chinedu O., Awka", comment: "Matt showed up right on time in Awka and my SUV looked showroom-new after. Booked and done in two minutes flat." },
-  { name: "Ifeoma A., Onitsha", comment: "I didn't expect to get an actual confirmed time slot without calling back and forth. This is how it should work." },
-  { name: "Uche N., Nnewi", comment: "Premium detail on my Camry was worth every naira — engine bay included. Will be booking again." },
+  { name: "Chinedu O.", comment: "Matt showed up right on time in Awka and my SUV looked showroom-new after. Booked and done in two minutes flat." },
+  { name: "Ifeoma A.", comment: "I didn't expect to get an actual confirmed time slot without calling back and forth. This is how it should work." },
+  { name: "Uche N.", comment: "Premium detail on my Camry was worth every naira — engine bay included. Will be booking again." },
 ];
 
 function Stars({ value, onPick, size = 18 }: { value: number; onPick?: (n: number) => void; size?: number }) {
