@@ -75,25 +75,34 @@ export function Reviews() {
           </button>
         </form>
         <div className="space-y-4">
-          {FEATURED.map((r) => (
-            <div key={r.name} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold">{r.name}</div>
-                <Stars value={5} size={14} />
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">{r.comment}</p>
-            </div>
-          ))}
-          {reviews.map((r) => (
-            <div key={r.id} className="rounded-2xl border border-border bg-card p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold">{r.name}</div>
-                <Stars value={r.rating} size={14} />
-              </div>
-              <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{r.comment}</p>
-              <div className="mt-2 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
-            </div>
-          ))}
+          {(() => {
+            const all = [
+              ...FEATURED.map((r) => ({ id: r.name, name: r.name, rating: 5, comment: r.comment, created_at: "" })),
+              ...reviews,
+            ];
+            const shown = expanded ? all : all.slice(0, 3);
+            return (
+              <>
+                {shown.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-border bg-card p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="font-semibold">{r.name}</div>
+                      <Stars value={r.rating} size={14} />
+                    </div>
+                    <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{r.comment}</p>
+                    {r.created_at && (
+                      <div className="mt-2 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+                    )}
+                  </div>
+                ))}
+                {all.length > 3 && (
+                  <button onClick={() => setExpanded(!expanded)} className="text-sm font-semibold text-primary hover:underline">
+                    {expanded ? "See less" : `See more (${all.length - 3})`}
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </section>
