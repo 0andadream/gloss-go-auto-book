@@ -83,14 +83,19 @@ const bookingInput = svc.extend({
 type BookingInput = z.infer<typeof bookingInput>;
 
 /** Insert the appointment after payment is confirmed. Re-checks the slot first (race guard). */
-async function insertBooking(data: BookingInput, paymentNote: string) {
+async function insertBooking(data: BookingInput, paymentNote: string, paymentTxRef: string) {
+  const sb = await db();
+  const { data: completed } = await sb.from("appointments").select("*").eq("payment_tx_ref", paymentTxRef).maybeSingle();
+  if (completed) return { ok: true as const, appointment: completed };
   const check = await isSlotStillOpen(data.vehicle, data.pkg, data.address, data.startIso);
-  if (!check.ok) return { ok: false as const, reason: "taken" as const };
+  if (!check.ok) {
+    const { data: raced } = await sb.from("appointments").select("*").eq("payment_tx_ref", paymentTxRef).maybeSingle();
+    return raced ? { ok: true as const, appointment: raced } : { ok: false as const, reason: "taken" as const };
+  }
   const { quote: q, buffer } = check.a;
   const start = new Date(data.startIso);
   const end = new Date(start.getTime() + q.minutes * 60000);
   const blockStart = new Date(start.getTime() - buffer.minutes * 60000);
-  const sb = await db();
   for (let attempt = 0; attempt < 5; attempt++) {
     const code = makeCode();
     const { data: row, error } = await sb.from("appointments").insert({
@@ -99,10 +104,15 @@ async function insertBooking(data: BookingInput, paymentNote: string) {
       travel_buffer_minutes: buffer.minutes, block_start: blockStart.toISOString(),
       start_time: start.toISOString(), end_time: end.toISOString(), price: q.price,
       deposit_amount: depositOf(q.price), deposit_status: "paid", status: "confirmed", source: "booked",
+      payment_tx_ref: paymentTxRef,
     }).select("*").single();
     if (error) {
-      if (error.code === "23P01") return { ok: false as const, reason: "taken" as const }; // DB-level overlap guard
-      if (error.code === "23505") continue; // code collision, retry
+      if (error.code === "23P01" || error.code === "23505") {
+        const { data: raced } = await sb.from("appointments").select("*").eq("payment_tx_ref", paymentTxRef).maybeSingle();
+        if (raced) return { ok: true as const, appointment: raced };
+        if (error.code === "23P01") return { ok: false as const, reason: "taken" as const };
+        continue; // confirmation-code collision, retry
+      }
       throw new Error(error.message);
     }
     if (data.leadId) await sb.from("leads").update({ status: "converted" }).eq("id", data.leadId);
@@ -153,6 +163,8 @@ export const initDeposit = createServerFn({ method: "POST" })
 /** Shared by the redirect return and the webhook: verify with Flutterwave, then insert the booking. */
 export async function completePaidBooking(txRef: string, transactionId: string) {
   const sb = await db();
+  const { data: completed } = await sb.from("appointments").select("*").eq("payment_tx_ref", txRef).maybeSingle();
+  if (completed) return { ok: true as const, appointment: completed };
   const { data: pending } = await sb.from("pending_payments").select("*").eq("tx_ref", txRef).maybeSingle();
   if (!pending) return { ok: false as const, reason: "unknown" as const };
   const res = await fetch(`${FLW_API}/transactions/${encodeURIComponent(transactionId)}/verify`, {
@@ -168,7 +180,7 @@ export async function completePaidBooking(txRef: string, transactionId: string) 
     await sb.from("pending_payments").delete().eq("tx_ref", txRef);
     return { ok: false as const, reason: "unpaid" as const };
   }
-  const result = await insertBooking(payload, `ref ${txRef}`);
+  const result = await insertBooking(payload, `ref ${txRef}`, txRef);
   if (result.ok) await sb.from("pending_payments").delete().eq("tx_ref", txRef);
   return result.ok ? result : { ok: false as const, reason: "taken" as const, payload };
 }

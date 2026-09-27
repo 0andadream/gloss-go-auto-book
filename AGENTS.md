@@ -15,3 +15,4 @@
 - Occupied range = [block_start, end_time) where block_start = start_time - travel buffer; a Postgres exclusion constraint enforces no overlap — final race-condition guard behind the server re-check.
 - All business times are Africa/Lagos; slot times shown to customers are arrival times.
 - Abandoned leads = leads not converted and older than 3 minutes (derived at read time, no cron).
+- Payment completion is idempotent by appointments.payment_tx_ref so the Flutterwave webhook and browser return can safely race.
