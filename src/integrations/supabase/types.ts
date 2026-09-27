@@ -46,6 +46,7 @@ export type Database = {
           end_time: string
           id: string
           package: string
+          payment_tx_ref: string | null
           phone: string
           price: number
           source: string
@@ -67,6 +68,7 @@ export type Database = {
           end_time: string
           id?: string
           package: string
+          payment_tx_ref?: string | null
           phone: string
           price: number
           source?: string
@@ -88,6 +90,7 @@ export type Database = {
           end_time?: string
           id?: string
           package?: string
+          payment_tx_ref?: string | null
           phone?: string
           price?: number
           source?: string
